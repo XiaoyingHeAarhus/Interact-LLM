@@ -1,4 +1,6 @@
-"""Chat formatting"""
+"""
+Chat formatting using pydantic
+"""
 
 from typing import Literal
 
