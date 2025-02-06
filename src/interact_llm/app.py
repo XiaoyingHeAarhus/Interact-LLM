@@ -17,7 +17,7 @@ disable_progress_bar()
 # temp
 MODEL_ID = "BSC-LT/salamandra-2b-instruct"
 CACHE_DIR = Path(__file__).parents[3] / "models"  # consider making it an argparse
-
+DEVICE = None # "mps" 
 
 # classes for formatting
 class UserMessage(Markdown):
@@ -54,12 +54,12 @@ class ChatApp(App):
     }
     """
 
-    def __init__(self, chat_history: ChatHistory = None):
+    def __init__(self):
         super().__init__()
-        self.chat_history = chat_history if chat_history else ChatHistory(messages=[])
+        self.chat_history = ChatHistory(messages=[])
 
     def on_mount(self) -> None:
-        self.model = ChatHF(model_id=MODEL_ID, cache_dir=CACHE_DIR)
+        self.model = ChatHF(model_id=MODEL_ID, cache_dir=CACHE_DIR, device=DEVICE)
         self.model.load()
 
     def update_chat_history(self, chat_message: ChatMessage) -> None:
@@ -84,7 +84,7 @@ class ChatApp(App):
         self.get_model_response(user_message.value, response)
 
     @work(thread=True)
-    def get_model_response(self, user_message: str, response: Response):
+    def get_model_response(self, user_message: str, response: Response) -> None:
         """
         Displays model response to user message, updating chat history
         """
