@@ -1,3 +1,9 @@
+"""
+Data model for logging language data
+
+Not currently in use ... 
+"""
+
 from dataclasses import dataclass
 from typing import Dict
 
