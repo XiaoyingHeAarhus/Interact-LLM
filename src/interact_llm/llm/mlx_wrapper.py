@@ -44,7 +44,7 @@ class ChatMLX:
         )
 
         # chat (decoded output)
-        response = generate(self.model, self.tokenizer, prompt=prompt, verbose=False)
+        response = generate(self.model, self.tokenizer, prompt=prompt, verbose=False, max_tokens=max_new_tokens)
 
         # formatting 
         chat_message = ChatMessage(role="assistant", content=response)
