@@ -4,8 +4,10 @@ Initial inspiration:https://textual.textualize.io/blog/2024/09/15/anatomy-of-a-t
 
 from pathlib import Path
 
-from interfaces.base_hf import ChatHF
-from interfaces.chat import ChatHistory, ChatMessage
+from llm.hf_wrapper import ChatHF
+from llm.mlx_wrapper import ChatMLX
+from data_models.chat import ChatHistory, ChatMessage
+
 from textual import on, work
 from textual.app import App, ComposeResult
 from textual.containers import VerticalScroll
@@ -13,11 +15,6 @@ from textual.widgets import Footer, Header, Input, Markdown
 from transformers.utils.logging import disable_progress_bar
 
 disable_progress_bar()
-
-# temp
-MODEL_ID = "BSC-LT/salamandra-2b-instruct"
-CACHE_DIR = Path(__file__).parents[3] / "models"  # consider making it an argparse
-DEVICE = None # "mps" 
 
 # classes for formatting
 class UserMessage(Markdown):
@@ -54,14 +51,17 @@ class ChatApp(App):
     }
     """
 
-    def __init__(self):
+    def __init__(self, model:ChatHF|ChatMLX):
         super().__init__()
         self.chat_history = ChatHistory(messages=[])
+        self.model = model
 
+    '''
     def on_mount(self) -> None:
-        self.model = ChatHF(model_id=MODEL_ID, cache_dir=CACHE_DIR, device=DEVICE)
+        #self.model = ChatHF(model_id=MODEL_ID, cache_dir=CACHE_DIR, device=DEVICE)
+        self.model = ChatMLX(model_id=MODEL_ID)
         self.model.load()
-
+    '''
     def update_chat_history(self, chat_message: ChatMessage) -> None:
         """Update chat history with a single new message."""
         self.chat_history.messages.append(chat_message)
@@ -106,7 +106,22 @@ class ChatApp(App):
 
 
 def main():
-    app = ChatApp()
+    # load model with MLX if possible, default to HF instead
+    try: 
+        model_id = "mlx-community/Qwen2.5-7B-Instruct-1M-4bit"
+        print(f"[INFO]: Loading model {model_id} ... please wait")
+        model = ChatMLX(model_id=model_id)
+        model.load()
+    except Exception as e:
+        print(f"[INFO:] Failed to run using MLX. Defaulting to HuggingFace. Error: {e}")
+        print(f"[INFO]: Loading model {model_id} ... please wait")
+        model_id = "BSC-LT/salamandra-2b-instruct"
+        cache_dir = Path(__file__).parents[3] / "models" 
+        model = ChatHF(model_id=model_id, cache_dir=cache_dir)
+        model.load()
+
+    # open tui app
+    app = ChatApp(model=model)
     app.run()
 
 
