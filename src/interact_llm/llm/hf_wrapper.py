@@ -8,12 +8,12 @@ from typing import Optional
 
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from .chat import ChatMessage
+from data_models.chat import ChatMessage
 
 
 class ChatHF:
     """
-    Model wrapper for loading and using a HuggingFace causal language model
+    Model wrapper for loading and using a HuggingFace causal language model with HF's own libraries
     """
 
     def __init__(
