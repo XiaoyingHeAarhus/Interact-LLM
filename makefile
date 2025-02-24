@@ -8,6 +8,11 @@ install:
 	uv sync
 
 format: 
-	@echo "[INFO:] Formatting code ..."
-	isort src/interact_llm
-	black src/interact_llm
+	@echo "[INFO:] Formatting code with ruff ..."
+	uv run ruff format . 						           
+	ruff check --select I --fix
+
+check-format: # for later automated formats where pre-commit fails if this check fails
+	@echo "[INFO:] Checking formatting ..."
+	uv run ruff format . --check						
+	uv run ruff check
