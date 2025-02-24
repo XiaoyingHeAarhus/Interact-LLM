@@ -1,24 +1,33 @@
 """
 Prompt formatting with meta data (to load configs)
 """
-import toml
+
 from pathlib import Path
+
+import toml
 from pydantic import BaseModel, Field
+
 
 class Prompt(BaseModel):
     """
     Model for prompt data
     """
+
     id: str
     content: str
+
 
 class SystemPrompt(Prompt):
     """
     Model for system prompt data
     """
+
     role: str = Field(default="system", frozen=True)
 
-def load_prompt_by_id(toml_path: Path, prompt_id:str, system_prompt:bool=True) -> Prompt | SystemPrompt | None:
+
+def load_prompt_by_id(
+    toml_path: Path, prompt_id: str, system_prompt: bool = True
+) -> Prompt | SystemPrompt | None:
     """
     Load a prompt by its ID from a TOML file and return it as either a SystemPrompt or a regular Prompt.
 
@@ -36,8 +45,14 @@ def load_prompt_by_id(toml_path: Path, prompt_id:str, system_prompt:bool=True) -
         if p["id"] == prompt_id:
             # make data into prompt
             prompt = Prompt.model_validate(p)
-            return SystemPrompt(id=prompt.id, content=prompt.content) if system_prompt else prompt
-        
+            return (
+                SystemPrompt(id=prompt.id, content=prompt.content)
+                if system_prompt
+                else prompt
+            )
+
     # print warning and return none if no prompt with ID found
-    print(f"[WARNING:] No prompt found with ID {prompt_id}, running without custom prompt ...")
+    print(
+        f"[WARNING:] No prompt found with ID {prompt_id}, running without custom prompt ..."
+    )
     return None

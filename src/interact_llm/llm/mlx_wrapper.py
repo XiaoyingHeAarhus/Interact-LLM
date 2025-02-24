@@ -5,13 +5,13 @@ MLX wrapper for running quantized mdls
 from pathlib import Path
 from typing import Optional
 
-from mlx_lm import load, generate
-
 from data_models.chat import ChatMessage
+from mlx_lm import generate, load
+
 
 class ChatMLX:
     """
-    Model wrapper for loading and using a Huggingface model through MLX 
+    Model wrapper for loading and using a Huggingface model through MLX
     """
 
     def __init__(
@@ -37,20 +37,24 @@ class ChatMLX:
 
             if self.device:
                 self.model.to(self.device)
-    
+
     def generate(self, chat: list, max_new_tokens: int = 200):
-        prompt = self.tokenizer.apply_chat_template( # nb see https://huggingface.co/mlx-community/Qwen2.5-7B-Instruct-1M-4bit
-            chat, tokenize=False, add_generation_prompt=True,
+        prompt = self.tokenizer.apply_chat_template(  # nb see https://huggingface.co/mlx-community/Qwen2.5-7B-Instruct-1M-4bit
+            chat,
+            tokenize=False,
+            add_generation_prompt=True,
         )
 
         # chat (decoded output)
-        response = generate(self.model, self.tokenizer, prompt=prompt, verbose=False, max_tokens=max_new_tokens)
+        response = generate(
+            self.model,
+            self.tokenizer,
+            prompt=prompt,
+            verbose=False,
+            max_tokens=max_new_tokens,
+        )
 
-        # formatting 
+        # formatting
         chat_message = ChatMessage(role="assistant", content=response)
 
         return chat_message
-
-if __name__ == "__main__":
-    main()
-

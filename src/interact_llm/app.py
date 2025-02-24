@@ -2,26 +2,26 @@
 Initial inspiration:https://textual.textualize.io/blog/2024/09/15/anatomy-of-a-textual-user-interface/#were-in-the-pipe-five-by-five
 """
 
+import json
+from datetime import datetime
 from pathlib import Path
 from typing import Optional
-from datetime import datetime
-import json
 
-from llm.hf_wrapper import ChatHF
-from llm.mlx_wrapper import ChatMLX
 from data_models.chat import ChatHistory, ChatMessage
 from data_models.prompt import load_prompt_by_id
-
+from llm.hf_wrapper import ChatHF
+from llm.mlx_wrapper import ChatMLX
 from textual import on, work
 from textual.app import App, ComposeResult
-from textual.containers import VerticalScroll, Grid
+from textual.containers import Grid, VerticalScroll
 from textual.screen import ModalScreen
-from textual.widgets import Footer, Input, Markdown, Button, Label
+from textual.widgets import Button, Footer, Input, Label, Markdown
 from transformers.utils.logging import disable_progress_bar
 
 disable_progress_bar()
 
-class QuitScreen(ModalScreen[bool]):  
+
+class QuitScreen(ModalScreen[bool]):
     """
     Screen with a dialog to quit !!
     From: https://textual.textualize.io/guide/screens/#__tabbed_4_4
@@ -41,6 +41,7 @@ class QuitScreen(ModalScreen[bool]):
         else:
             self.dismiss(False)
 
+
 # classes for formatting
 class UserMessage(Markdown):
     pass
@@ -48,6 +49,7 @@ class UserMessage(Markdown):
 
 class Response(Markdown):
     BORDER_TITLE = "Interact-LLM"
+
 
 class ChatApp(App):
     """
@@ -103,7 +105,12 @@ class ChatApp(App):
     }
     """
 
-    def __init__(self, model:ChatHF|ChatMLX, chat_history: Optional[ChatHistory] = None, chat_messages_dir: Optional[Path] = None):
+    def __init__(
+        self,
+        model: ChatHF | ChatMLX,
+        chat_history: Optional[ChatHistory] = None,
+        chat_messages_dir: Optional[Path] = None,
+    ):
         """
         Initializes the terminal app with a loaded ChatHF or ChatMLX model. The application will not start if the model is not loaded.
 
@@ -112,31 +119,35 @@ class ChatApp(App):
             chat_history: An optional chat history to initialize the application with, e.g., to include a system prompt.
             chat_messages_dir: The directory to save chat messages. If None, chat messages will not be saved.
         """
-        
+
         super().__init__()
-        self.chat_history = ChatHistory(messages=[]) if chat_history is None else chat_history
+        self.chat_history = (
+            ChatHistory(messages=[]) if chat_history is None else chat_history
+        )
         self.model = model
         self.chat_messages_dir = chat_messages_dir
 
-        # run prelim checks 
+        # run prelim checks
         self._check_model_is_loaded()
 
         if self.chat_messages_dir is not None:
             self._ensure_chat_dir_exists()
 
-    # wrangling chat messages 
+    # wrangling chat messages
     def _ensure_chat_dir_exists(self):
         self.chat_messages_dir.mkdir(parents=True, exist_ok=True)
 
     def _check_model_is_loaded(self):
-        if self.model.model is None: 
-            self.exit(message="[ERROR:] Chat model is not loaded, ensure this is done before launching app.")
+        if self.model.model is None:
+            self.exit(
+                message="[ERROR:] Chat model is not loaded, ensure this is done before launching app."
+            )
 
     def update_chat_history(self, chat_message: ChatMessage) -> None:
         """Update chat history with a single new message."""
         self.chat_history.messages.append(chat_message)
 
-    # app buttons 
+    # app buttons
     def compose(self) -> ComposeResult:
         with VerticalScroll(id="chat-view"):
             yield Response("¿Hola quieres practicar conmigo?")
@@ -150,15 +161,21 @@ class ChatApp(App):
             """Called when QuitScreen is dismissed."""
             if quit:
                 if self.chat_messages_dir is not None:
-                    chat_json = json.dumps([msg.dict() for msg in self.chat_history.messages], indent=3, ensure_ascii=False)
+                    chat_json = json.dumps(
+                        [msg.dict() for msg in self.chat_history.messages],
+                        indent=3,
+                        ensure_ascii=False,
+                    )
                     save_file_name = datetime.now().strftime("%Y%m%d-%H%M%S")
-                    with open(self.chat_messages_dir / f"{save_file_name}.json", "w") as outfile:
+                    with open(
+                        self.chat_messages_dir / f"{save_file_name}.json", "w"
+                    ) as outfile:
                         outfile.write(chat_json)
                 self.exit()
 
         self.push_screen(QuitScreen(), check_quit)
 
-    ## chatting functionality 
+    ## chatting functionality
     @on(Input.Submitted)
     async def on_input(self, user_message: Input.Submitted) -> None:
         chat_view = self.query_one("#chat-view")
@@ -192,20 +209,27 @@ class ChatApp(App):
 
 
 def main():
-    # load prompt    
-    prompt_version = 1.0    
+    # load prompt
+    prompt_version = 1.0
     prompt_id = "A1"
-    prompt_file = Path(__file__).parents[2] / "configs" / "prompts" / f"v{str(prompt_version)}.toml"
+    prompt_file = (
+        Path(__file__).parents[2]
+        / "configs"
+        / "prompts"
+        / f"v{str(prompt_version)}.toml"
+    )
 
-    system_prompt = load_prompt_by_id(toml_path=prompt_file, prompt_id=prompt_id, system_prompt=True)
-    
+    system_prompt = load_prompt_by_id(
+        toml_path=prompt_file, prompt_id=prompt_id, system_prompt=True
+    )
+
     # format initial chat msg w. system prompt
-    chat_history = ChatHistory(messages=[
-                                ChatMessage(role = system_prompt.role, content = system_prompt.content)
-                                ])
+    chat_history = ChatHistory(
+        messages=[ChatMessage(role=system_prompt.role, content=system_prompt.content)]
+    )
 
     # load model with MLX if possible, default to HF instead
-    try: 
+    try:
         model_id = "mlx-community/Qwen2.5-7B-Instruct-1M-4bit"
         model = ChatMLX(model_id=model_id)
         print(f"[INFO]: Loading model {model_id} ... please wait")
@@ -213,17 +237,24 @@ def main():
     except Exception as e:
         print(f"[INFO:] Failed to run using MLX. Defaulting to HuggingFace. Error: {e}")
         model_id = "BSC-LT/salamandra-2b-instruct"
-        cache_dir = Path(__file__).parents[3] / "models" 
+        cache_dir = Path(__file__).parents[3] / "models"
         model = ChatHF(model_id=model_id, cache_dir=cache_dir)
         print(f"[INFO]: Loading model {model_id} ... please wait")
         model.load()
-    
-    # define save dir 
-    save_dir = Path(__file__).parents[3] / "data" / model_id.replace("/", "--") / prompt_id / f"v{str(prompt_version)}"
 
-    # open tui app -> pass loaded model 
+    # define save dir
+    save_dir = (
+        Path(__file__).parents[3]
+        / "data"
+        / model_id.replace("/", "--")
+        / prompt_id
+        / f"v{str(prompt_version)}"
+    )
+
+    # open tui app -> pass loaded model
     app = ChatApp(model=model, chat_history=chat_history, chat_messages_dir=save_dir)
     app.run()
+
 
 if __name__ == "__main__":
     main()

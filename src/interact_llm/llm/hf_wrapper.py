@@ -6,9 +6,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from transformers import AutoModelForCausalLM, AutoTokenizer
-
 from data_models.chat import ChatMessage
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
 class ChatHF:
@@ -35,12 +34,15 @@ class ChatHF:
         Lazy-loading (loads model and tokenizer if not already loaded)
         """
         if self.tokenizer is None:
-            self.tokenizer = AutoTokenizer.from_pretrained(self.model_id, cache_dir=self.cache_dir)
+            self.tokenizer = AutoTokenizer.from_pretrained(
+                self.model_id, cache_dir=self.cache_dir
+            )
 
         if self.model is None:
             self.model = AutoModelForCausalLM.from_pretrained(
-                self.model_id, device_map=self.device_map if self.device_map else None, 
-                cache_dir=self.cache_dir
+                self.model_id,
+                device_map=self.device_map if self.device_map else None,
+                cache_dir=self.cache_dir,
             )
             if self.device:
                 self.model.to(self.device)
