@@ -36,8 +36,8 @@ def load_prompt_by_id(toml_path: Path, prompt_id:str, system_prompt:bool=True) -
         if p["id"] == prompt_id:
             # make data into prompt
             prompt = Prompt.model_validate(p)
-            return SystemPrompt(**prompt.model_dump()) if system_prompt else prompt
-
+            return SystemPrompt(id=prompt.id, content=prompt.content) if system_prompt else prompt
+        
     # print warning and return none if no prompt with ID found
     print(f"[WARNING:] No prompt found with ID {prompt_id}, running without custom prompt ...")
     return None
