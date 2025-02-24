@@ -2,6 +2,7 @@
 Initial inspiration:https://textual.textualize.io/blog/2024/09/15/anatomy-of-a-textual-user-interface/#were-in-the-pipe-five-by-five
 """
 
+import argparse
 import json
 from datetime import datetime
 from pathlib import Path
@@ -19,6 +20,23 @@ from textual.widgets import Button, Footer, Input, Label, Markdown
 from transformers.utils.logging import disable_progress_bar
 
 disable_progress_bar()
+
+
+def input_parse():
+    parser = argparse.ArgumentParser()
+
+    # add arguments
+    parser.add_argument(
+        "--prompt_id", help="id of prompt in toml", type=str, default="A1"
+    )
+    parser.add_argument(
+        "--prompt_version", help="version of prompt toml file", type=float, default=1.0
+    )
+
+    # save arguments to be parsed from the CLI
+    args = parser.parse_args()
+
+    return args
 
 
 class QuitScreen(ModalScreen[bool]):
@@ -209,17 +227,21 @@ class ChatApp(App):
 
 
 def main():
-    sampling_params = {"temp": 0.8, "top_p": 0.95, "min_p": 0.95, "top_k": 40}
-    penality_params = {"repetition_penalty": 1.1}
+    # init cli args
+    args = input_parse()
 
     # load prompt
-    prompt_version = 1.0
-    prompt_id = "A1"
+    prompt_version = args.prompt_version
+    prompt_id = args.prompt_id
     prompt_file = (
         Path(__file__).parents[2]
         / "configs"
         / "prompts"
         / f"v{str(prompt_version)}.toml"
+    )
+
+    print(
+        f"[INFO]: Formatting prompts using toml file version {prompt_version} and prompt id {prompt_id}"
     )
 
     system_prompt = load_prompt_by_id(
@@ -230,6 +252,10 @@ def main():
     chat_history = ChatHistory(
         messages=[ChatMessage(role=system_prompt.role, content=system_prompt.content)]
     )
+
+    # define sampler params
+    sampling_params = {"temp": 0.8, "top_p": 0.95, "min_p": 0.95, "top_k": 40}
+    penality_params = {"repetition_penalty": 1.1}
 
     # load model with MLX if possible, default to HF instead
     try:
@@ -254,8 +280,8 @@ def main():
         Path(__file__).parents[3]
         / "data"
         / model_id.replace("/", "--")
-        / prompt_id
         / f"v{str(prompt_version)}"
+        / prompt_id
     )
 
     # open tui app -> pass loaded model
