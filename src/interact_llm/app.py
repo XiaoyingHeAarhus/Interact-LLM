@@ -121,10 +121,10 @@ class ChatApp(App):
         """
 
         super().__init__()
+        self.model = model
         self.chat_history = (
             ChatHistory(messages=[]) if chat_history is None else chat_history
         )
-        self.model = model
         self.chat_messages_dir = chat_messages_dir
 
         # run prelim checks
@@ -133,15 +133,15 @@ class ChatApp(App):
         if self.chat_messages_dir is not None:
             self._ensure_chat_dir_exists()
 
-    # wrangling chat messages
-    def _ensure_chat_dir_exists(self):
-        self.chat_messages_dir.mkdir(parents=True, exist_ok=True)
-
     def _check_model_is_loaded(self):
         if self.model.model is None:
             self.exit(
                 message="[ERROR:] Chat model is not loaded, ensure this is done before launching app."
             )
+
+    # wrangling chat messages
+    def _ensure_chat_dir_exists(self):
+        self.chat_messages_dir.mkdir(parents=True, exist_ok=True)
 
     def update_chat_history(self, chat_message: ChatMessage) -> None:
         """Update chat history with a single new message."""
@@ -209,6 +209,9 @@ class ChatApp(App):
 
 
 def main():
+    sampling_params = {"temp": 0.8, "top_p": 0.95, "min_p": 0.95, "top_k": 40}
+    penality_params = {"repetition_penalty": 1.1}
+
     # load prompt
     prompt_version = 1.0
     prompt_id = "A1"
@@ -231,7 +234,11 @@ def main():
     # load model with MLX if possible, default to HF instead
     try:
         model_id = "mlx-community/Qwen2.5-7B-Instruct-1M-4bit"
-        model = ChatMLX(model_id=model_id)
+        model = ChatMLX(
+            model_id=model_id,
+            sampling_params=sampling_params,
+            penalty_params=penality_params,
+        )
         print(f"[INFO]: Loading model {model_id} ... please wait")
         model.load()
     except Exception as e:
@@ -252,7 +259,11 @@ def main():
     )
 
     # open tui app -> pass loaded model
-    app = ChatApp(model=model, chat_history=chat_history, chat_messages_dir=save_dir)
+    app = ChatApp(
+        model=model,
+        chat_history=chat_history,
+        chat_messages_dir=save_dir,
+    )
     app.run()
 
 
