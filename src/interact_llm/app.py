@@ -10,6 +10,7 @@ import json
 from llm.hf_wrapper import ChatHF
 from llm.mlx_wrapper import ChatMLX
 from data_models.chat import ChatHistory, ChatMessage
+from data_models.prompt import load_prompt_by_id
 
 from textual import on, work
 from textual.app import App, ComposeResult
@@ -48,7 +49,7 @@ class UserMessage(Markdown):
 class Response(Markdown):
     BORDER_TITLE = "Interact-LLM"
 
-class ChatApp(App[ChatHistory]):
+class ChatApp(App):
     """
     Texttual app for chatting with llm
     """
@@ -102,11 +103,23 @@ class ChatApp(App[ChatHistory]):
     }
     """
 
-    def __init__(self, model:ChatHF|ChatMLX, chat_messages_dir: Optional[Path] = None):
+    def __init__(self, model:ChatHF|ChatMLX, chat_history: Optional[ChatHistory] = None, chat_messages_dir: Optional[Path] = None):
+        """
+        Initializes the terminal app with a loaded ChatHF or ChatMLX model. The application will not start if the model is not loaded.
+
+        Args:
+            model: The loaded language model wrapped in either ChatHF or ChatMLX.
+            chat_history: An optional chat history to initialize the application with, e.g., to include a system prompt.
+            chat_messages_dir: The directory to save chat messages. If None, chat messages will not be saved.
+        """
+        
         super().__init__()
-        self.chat_history = ChatHistory(messages=[])
+        self.chat_history = ChatHistory(messages=[]) if chat_history is None else chat_history
         self.model = model
         self.chat_messages_dir = chat_messages_dir
+
+        # run prelim checks 
+        self._check_model_is_loaded()
 
         if self.chat_messages_dir is not None:
             self._ensure_chat_dir_exists()
@@ -114,6 +127,10 @@ class ChatApp(App[ChatHistory]):
     # wrangling chat messages 
     def _ensure_chat_dir_exists(self):
         self.chat_messages_dir.mkdir(parents=True, exist_ok=True)
+
+    def _check_model_is_loaded(self):
+        if self.model.model is None: 
+            self.exit(message="[ERROR:] Chat model is not loaded, ensure this is done before launching app.")
 
     def update_chat_history(self, chat_message: ChatMessage) -> None:
         """Update chat history with a single new message."""
@@ -175,27 +192,38 @@ class ChatApp(App[ChatHistory]):
 
 
 def main():
+    # load prompt    
+    prompt_version = 1.0    
+    prompt_id = "A1"
+    prompt_file = Path(__file__).parents[2] / "configs" / "prompts" / f"v{str(prompt_version)}.toml"
+
+    system_prompt = load_prompt_by_id(toml_path=prompt_file, prompt_id=prompt_id, system_prompt=True)
+    
+    # format initial chat msg w. system prompt
+    chat_history = ChatHistory(messages=[
+                                ChatMessage(role = system_prompt.role, content = system_prompt.content)
+                                ])
+
     # load model with MLX if possible, default to HF instead
     try: 
         model_id = "mlx-community/Qwen2.5-7B-Instruct-1M-4bit"
-        print(f"[INFO]: Loading model {model_id} ... please wait")
         model = ChatMLX(model_id=model_id)
+        print(f"[INFO]: Loading model {model_id} ... please wait")
         model.load()
     except Exception as e:
         print(f"[INFO:] Failed to run using MLX. Defaulting to HuggingFace. Error: {e}")
-        print(f"[INFO]: Loading model {model_id} ... please wait")
         model_id = "BSC-LT/salamandra-2b-instruct"
         cache_dir = Path(__file__).parents[3] / "models" 
         model = ChatHF(model_id=model_id, cache_dir=cache_dir)
+        print(f"[INFO]: Loading model {model_id} ... please wait")
         model.load()
-
+    
     # define save dir 
-    save_dir = Path(__file__).parents[3] / "data" / model_id.replace("/", "--")
+    save_dir = Path(__file__).parents[3] / "data" / model_id.replace("/", "--") / prompt_id / f"v{str(prompt_version)}"
 
-    # open tui app
-    app = ChatApp(model=model, chat_messages_dir=save_dir)
+    # open tui app -> pass loaded model 
+    app = ChatApp(model=model, chat_history=chat_history, chat_messages_dir=save_dir)
     app.run()
-
 
 if __name__ == "__main__":
     main()
