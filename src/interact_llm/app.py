@@ -21,7 +21,7 @@ from transformers.utils.logging import disable_progress_bar
 
 disable_progress_bar()
 
-DEFAULT_PROMPT_VERSION = 1.1
+DEFAULT_PROMPT_VERSION = 2.0
 
 def input_parse():
     parser = argparse.ArgumentParser()
