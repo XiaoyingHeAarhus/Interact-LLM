@@ -21,6 +21,7 @@ from transformers.utils.logging import disable_progress_bar
 
 disable_progress_bar()
 
+DEFAULT_PROMPT_VERSION = 2.0
 
 def input_parse():
     parser = argparse.ArgumentParser()
@@ -30,7 +31,7 @@ def input_parse():
         "--prompt_id", help="id of prompt in toml", type=str, default="A1"
     )
     parser.add_argument(
-        "--prompt_version", help="version of prompt toml file", type=float, default=1.0
+        "--prompt_version", help="version of prompt toml file", type=float, default=DEFAULT_PROMPT_VERSION
     )
 
     # save arguments to be parsed from the CLI
