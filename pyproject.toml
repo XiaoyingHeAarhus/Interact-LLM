@@ -1,5 +1,5 @@
 [project]
-name = "interact-llm"
+name = "interact_llm"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -32,3 +32,5 @@ dev = [
 src = ["src"]
 lint.select = ["F", "E", "W", "I001"] # F for pyflakes, E + W for pycodestyle errors + warnings, #I001 for isort
 
+[tool.setuptools]
+include-package-data = true
