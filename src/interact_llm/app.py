@@ -8,16 +8,17 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from data_models.chat import ChatHistory, ChatMessage
-from data_models.prompt import load_prompt_by_id
-from llm.hf_wrapper import ChatHF
-from llm.mlx_wrapper import ChatMLX
 from textual import on, work
 from textual.app import App, ComposeResult
 from textual.containers import Grid, VerticalScroll
 from textual.screen import ModalScreen
 from textual.widgets import Button, Footer, Input, Label, Markdown
 from transformers.utils.logging import disable_progress_bar
+
+from .data_models.chat import ChatHistory, ChatMessage
+from .data_models.prompt import load_prompt_by_id
+from .llm.hf_wrapper import ChatHF
+from .llm.mlx_wrapper import ChatMLX
 
 disable_progress_bar()
 

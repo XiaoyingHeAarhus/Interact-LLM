@@ -5,7 +5,7 @@ MLX wrapper for running quantized mdls
 from pathlib import Path
 from typing import Optional
 
-from data_models.chat import ChatMessage
+from interact_llm.data_models.chat import ChatMessage
 from mlx_lm import generate, load
 from mlx_lm.sample_utils import make_logits_processors, make_sampler
 

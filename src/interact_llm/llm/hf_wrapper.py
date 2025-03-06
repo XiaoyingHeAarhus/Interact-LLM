@@ -6,7 +6,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from data_models.chat import ChatMessage
+from interact_llm.data_models.chat import ChatMessage
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
