@@ -1,7 +1,7 @@
 add-uv:
 	@echo "[INFO:] Installing UV ..."	
 	# add mac / linux
-	curl -LsSf https://astral.sh/uv/install.sh | sh
+	curl -LsSf https://astral.sh/uv/0.6.2/install.sh | sh
 
 install:
 	@echo "[INFO:] Installing project ..."
