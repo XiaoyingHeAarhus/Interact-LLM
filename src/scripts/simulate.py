@@ -1,5 +1,10 @@
 """
 Simulate two chat LLMs talking to each other
+
+Model tested currently: 
+- mlx-community/Qwen2.5-7B-Instruct-1M-4bit
+- mlx-community/meta-Llama-3.1-8B-Instruct-4bit
+
 """
 from datetime import datetime
 import json
@@ -23,6 +28,11 @@ def input_parse():
     )
     parser.add_argument(
         "--prompt_version", help="version of prompt toml file", type=float, default=DEFAULT_PROMPT_VERSION
+    )
+
+    parser.add_argument(
+        "--model_id", help="model id as it is specified on hugging face", type=str, 
+        default = "mlx-community/Qwen2.5-7B-Instruct-1M-4bit"
     )
 
     # save arguments to be parsed from the CLI
@@ -65,7 +75,7 @@ def main():
     sampling_params = {"temp": 0.8, "top_p": 0.95, "min_p": 0.95, "top_k": 40}
     penality_params = {"repetition_penalty": 1.1}
 
-    model_id = "mlx-community/Qwen2.5-7B-Instruct-1M-4bit"
+    model_id = args.model_id
     model = ChatMLX(
             model_id=model_id,
             sampling_params=sampling_params,
@@ -111,7 +121,7 @@ def main():
     save_dir.mkdir(exist_ok=True, parents=True)
 
     save_file_name = datetime.now().strftime("%Y%m%d-%H%M%S")
-    with open(save_dir / f"{save_file_name}_teacher.json", "w") as outfile:
+    with open(save_dir / f"{save_file_name}.json", "w") as outfile:
         outfile.write(chat_json)
 
 if __name__ == "__main__":
