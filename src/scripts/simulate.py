@@ -13,7 +13,9 @@ import argparse
 
 from interact_llm.llm.mlx_wrapper import ChatMLX
 from interact_llm.data_models.chat import ChatMessage, ChatHistory
-from interact_llm.data_models.prompt import load_prompt_by_id
+from interact_llm.data_models.prompt import load_prompt_by_id, SystemPrompt
+
+from scripts.detect_lang import _detect_lang
 
 from tqdm import tqdm
 
@@ -40,9 +42,66 @@ def input_parse():
 
     return args
 
+def simulate_conversation(model: ChatMLX, n_total_rounds:int = 9, tutor_system_prompt=SystemPrompt) -> ChatHistory:
+    """    
+    Simulate an LLM conversation
+
+    Note that we are interested in the tutor only, but each has their own history in which they are the assistant, responding to a user. 
+    """
+
+    # define histories 
+    student_history = ChatHistory(messages=[ChatMessage(role = "system", content="You are a student learning Spanish, responding to a teacher who is facilitating a natural dialogue with you.")])
+    
+    tutor_history = ChatHistory(
+        messages=[ChatMessage(role=tutor_system_prompt.role, content=tutor_system_prompt.content), 
+                  ChatMessage(role = "user", content="Hola"), # pre-fixed what the tutor LLM receives
+                  ]
+    )
+
+    for _ in tqdm(range(n_total_rounds)):
+        # tutor in assistant role responds to user (first time to the pre-fixed "hola")
+        max_retries = 5
+        tutor_message = None
+
+        for attempt in range(max_retries):
+            tutor_message = model.generate(tutor_history)
+            if not _detect_lang(tutor_message.content):  # If no English is detected, proceed
+                break
+            print(f"[WARNING]: Tutor response contains English (attempt {attempt+1}/{max_retries}). Regenerating...")
+
+        else:  # If the loop completes without breaking (i.e., all retries failed)
+            print("[ERROR]: Tutor failed to generate a fully Spanish response after max retries. Exiting...")
+            return None  # Exit function early
+        
+        tutor_history.messages.append(tutor_message)
+
+        # student receives tutor response as a user message
+        student_history.messages.append(ChatMessage(role="user", content=tutor_message.content))
+        
+        # student in assistant role responds to user, append to teacher chat history
+        student_message = model.generate(student_history)
+        student_history.messages.append(student_message)
+        
+        # tutor receives student response as a user message
+        tutor_history.messages.append(ChatMessage(role="user", content=student_message.content))
+        
+    return tutor_history
+
 def main():
-    # init cli args
     args = input_parse()
+
+    # load model with MLX
+    sampling_params = {"temp": 1.0, "top_p": 1.0, "top_k": 50} # default HF params (MLX has weird defaults - almost everything is 0)
+    penality_params = {"repetition_penalty": 1.0}
+
+    model_id = args.model_id
+    model = ChatMLX(
+            model_id=model_id,
+            sampling_params=sampling_params,
+            penalty_params=penality_params,
+        )
+    print(f"[INFO]: Loading model {model_id} ... please wait")
+    model.load()
 
     # PROMPT FORMATTING
     prompt_version = args.prompt_version
@@ -62,50 +121,12 @@ def main():
         toml_path=prompt_file, prompt_id=prompt_id, system_prompt=True
     )
 
-    # define chat histories 
-    student_history = ChatHistory(messages=[ChatMessage(role = "system", content="You are a student learning Spanish, responding to a teacher who is facilitating a natural dialogue with you.")])
-    
-    teacher_history = ChatHistory(
-        messages=[ChatMessage(role=system_prompt.role, content=system_prompt.content), 
-                  ChatMessage(role = "user", content="Hola"),
-                  ]
-    )
-
-    # load model with MLX
-    sampling_params = {"temp": 0.8, "top_p": 0.95, "min_p": 0.95, "top_k": 40}
-    penality_params = {"repetition_penalty": 1.1}
-
-    model_id = args.model_id
-    model = ChatMLX(
-            model_id=model_id,
-            sampling_params=sampling_params,
-            penalty_params=penality_params,
-        )
-    print(f"[INFO]: Loading model {model_id} ... please wait")
-    model.load()
-
-    # how many responses in total
-    n_total_rounds = 9
-    
-    for _ in tqdm(range(n_total_rounds)):
-        # assistant responds to user
-        teacher_message = model.generate(teacher_history) # assistant
-        teacher_history.messages.append(teacher_message) 
-
-        # format as a user msg for assistant
-        teacher_as_user = ChatMessage(role = "user", content = teacher_message.content)
-        student_history.messages.append(teacher_as_user)
-        
-        # get student response, append to teacher chat history
-        student_message = model.generate(student_history) # assistant 
-        student_history.messages.append(student_message)
-
-        student_as_user = ChatMessage(role = "user", content = student_message.content)
-        teacher_history.messages.append(student_as_user)
+    # simulate
+    tutor_history = simulate_conversation(model=model, n_total_rounds=9, tutor_system_prompt=system_prompt)
 
     # save chat
     chat_json = json.dumps(
-                        [msg.dict() for msg in teacher_history.messages],
+                        [msg.model_dump() for msg in tutor_history.messages],
                         indent=3,
                         ensure_ascii=False,
                     )

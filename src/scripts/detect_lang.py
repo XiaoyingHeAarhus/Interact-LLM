@@ -7,7 +7,6 @@ test_text_with_english = "Me alegra saber que estás disfrutando de la clase. A 
 
 test_text_without_english = "Me alegra saber que estás disfrutando de la clase. A mí también me parece divertida hoy, especialmente porque vamos a hablar sobre las festividades en España. ¿Sabías que la fiesta más famosa es el Carnaval?"
 
-test_with_low_english_mix = "Estoy contenta, love you"
 
 
 def _split_text(text: str) -> list[str]:
@@ -23,7 +22,7 @@ def _split_text(text: str) -> list[str]:
 
     return result
 
-def _detect_lang(text:list[str] | str, languages_to_consider:list[Language] = LANGUAGES, language_threshold: tuple[Language, float] = (Language.ENGLISH, 0.30)) -> bool:
+def _detect_lang(text:list[str] | str, languages_to_consider:list[Language] = LANGUAGES, language_threshold: tuple[Language, float] = (Language.ENGLISH, 0.90)) -> bool:
     """
     Returns true if language threshold (specific language, confidence that X contains language)
     """
@@ -55,9 +54,3 @@ if __name__ == "__main__":
     print("Test 2: Detection without English")
     detection_without_english = _detect_lang(text=test_text_without_english)
     print(detection_without_english, "\n")
-
-    # Case 3: Text with a small amount of English mixed in
-    print("Test 3: Detection with Low English Mix")
-    detection_with_low_english_mix = _detect_lang(text=test_with_low_english_mix)
-    print(detection_with_low_english_mix, "\n")
-    
