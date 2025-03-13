@@ -17,7 +17,7 @@ from interact_llm.data_models.prompt import load_prompt_by_id
 
 from tqdm import tqdm
 
-DEFAULT_PROMPT_VERSION = 2.0
+DEFAULT_PROMPT_VERSION = 3.0
 
 def input_parse():
     parser = argparse.ArgumentParser()
