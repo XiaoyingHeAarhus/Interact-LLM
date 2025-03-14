@@ -22,7 +22,7 @@ from .llm.mlx_wrapper import ChatMLX
 
 disable_progress_bar()
 
-DEFAULT_PROMPT_VERSION = 2.0
+DEFAULT_PROMPT_VERSION = 3.0
 
 def input_parse():
     parser = argparse.ArgumentParser()
