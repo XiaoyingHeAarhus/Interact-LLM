@@ -1,4 +1,5 @@
 import re
+
 from lingua import Language, LanguageDetectorBuilder
 
 LANGUAGES = [Language.ENGLISH, Language.SPANISH]
@@ -8,11 +9,10 @@ test_text_with_english = "Me alegra saber que estás disfrutando de la clase. A 
 test_text_without_english = "Me alegra saber que estás disfrutando de la clase. A mí también me parece divertida hoy, especialmente porque vamos a hablar sobre las festividades en España. ¿Sabías que la fiesta más famosa es el Carnaval?"
 
 
-
 def _split_text(text: str) -> list[str]:
-    sents = re.split(r'([.?!])', text)  # capture sent delimiters
+    sents = re.split(r"([.?!])", text)  # capture sent delimiters
     result = []
-    
+
     for i in range(0, len(sents), 2):  # process in pairs
         sentence = sents[i].strip()
         if i + 1 < len(sents):  # if there is a delimiter, attach it
@@ -22,15 +22,19 @@ def _split_text(text: str) -> list[str]:
 
     return result
 
-def _detect_lang(text:list[str] | str, languages_to_consider:list[Language] = LANGUAGES, language_threshold: tuple[Language, float] = (Language.ENGLISH, 0.90)) -> bool:
+
+def _detect_lang(
+    text: list[str] | str,
+    languages_to_consider: list[Language] = LANGUAGES,
+    language_threshold: tuple[Language, float] = (Language.ENGLISH, 0.90),
+) -> bool:
     """
     Returns true if language threshold (specific language, confidence that X contains language)
     """
     if not isinstance(text, list):
         sents = _split_text(text)
-    else: 
+    else:
         sents = text
-
 
     detector = LanguageDetectorBuilder.from_languages(*languages_to_consider).build()
 
@@ -38,11 +42,17 @@ def _detect_lang(text:list[str] | str, languages_to_consider:list[Language] = LA
         confidence_values = detector.compute_language_confidence_values(sent)
 
         for confidence in confidence_values:
-            if confidence.language == language_threshold[0] and confidence.value >= language_threshold[1]:
-                print(f"[INFO]: Text contains at least one sentence with {language_threshold[0].name} (confidence of {language_threshold[1]})")
+            if (
+                confidence.language == language_threshold[0]
+                and confidence.value >= language_threshold[1]
+            ):
+                print(
+                    f"[INFO]: Text contains at least one sentence with {language_threshold[0].name} (confidence of {language_threshold[1]})"
+                )
                 return True  # If any sentence meets the threshold, return True
 
     return False  # If no sentences meet the threshold, return False
+
 
 if __name__ == "__main__":
     # Case 1: Text with both Spanish and English
