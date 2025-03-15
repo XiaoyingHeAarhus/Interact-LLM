@@ -16,7 +16,8 @@ from tqdm import tqdm
 
 from interact_llm.data_models.chat import ChatHistory, ChatMessage
 from interact_llm.data_models.prompt import SystemPrompt, load_prompt_by_id
-from interact_llm.llm.mlx_wrapper import ChatMLX, ChatHF
+from interact_llm.llm.mlx_wrapper import ChatMLX
+from interact_llm.llm.hf_wrapper import ChatHF
 from scripts.detect_lang import _detect_lang
 
 DEFAULT_PROMPT_VERSION = 3.0

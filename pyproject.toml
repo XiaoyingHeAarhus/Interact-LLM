@@ -18,6 +18,7 @@ dependencies = [
     "textual>=1.0.0",
     "toml>=0.10.2",
     "torch>=2.6.0",
+    "tqdm>=4.67.1",
     "transformers>=4.48.2",
 ]
 
