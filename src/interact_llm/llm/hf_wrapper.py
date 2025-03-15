@@ -18,13 +18,11 @@ class ChatHF:
     def __init__(
         self,
         model_id: str,
-        device: Optional[str] = None,
-        device_map: Optional[str] = None,
         cache_dir: Optional[Path] = None,
+        sampling_params: Optional[dict] = None,
+        penalty_params: Optional[dict] = None,
     ):
         self.model_id = model_id
-        self.device = device
-        self.device_map = device_map
         self.cache_dir = cache_dir
         self.tokenizer = None
         self.model = None
@@ -43,22 +41,36 @@ class ChatHF:
                 self.model_id,
                 device_map=self.device_map if self.device_map else None,
                 cache_dir=self.cache_dir,
+                torch_dtype="auto",
+                device_map="auto"
             )
-            if self.device:
-                self.model.to(self.device)
+
+    def format_params(self):
+        if self.sampling_params:         
+            kwargs = self.sampling_params
+        else:
+            kwargs = {}
+
+        if self.penalty_params:           
+            kwargs.update(self.penalty_params)
+
+        return kwargs
 
     def generate(self, chat: list[ChatMessage], max_new_tokens: int = 200):
-        ds = datetime.today().strftime("%Y-%m-%d")
+        kwargs = self.format_params()
+
         prompt = self.tokenizer.apply_chat_template(
-            chat, tokenize=False, add_generation_prompt=True, date_string=ds
+            chat, tokenize=False, add_generation_prompt=True,
         )
 
         # tokenized inputs and outputs
         token_inputs = self.tokenizer.encode(
             prompt, add_special_tokens=False, return_tensors="pt"
-        )
+        ).to(self.model.device)
+
         token_outputs = self.model.generate(
-            input_ids=token_inputs.to(self.model.device), max_new_tokens=max_new_tokens
+            input_ids=token_inputs.to(self.model.device), max_new_tokens=max_new_tokens, 
+            **kwargs
         )
 
         # chat (decoded output)
