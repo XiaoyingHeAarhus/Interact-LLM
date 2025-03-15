@@ -1,5 +1,4 @@
 version = 1
-revision = 1
 requires-python = ">=3.12.3"
 
 [[package]]
@@ -141,6 +140,7 @@ dependencies = [
     { name = "textual" },
     { name = "toml" },
     { name = "torch" },
+    { name = "tqdm" },
     { name = "transformers" },
 ]
 
@@ -160,6 +160,7 @@ requires-dist = [
     { name = "textual", specifier = ">=1.0.0" },
     { name = "toml", specifier = ">=0.10.2" },
     { name = "torch", specifier = ">=2.6.0" },
+    { name = "tqdm", specifier = ">=4.67.1" },
     { name = "transformers", specifier = ">=4.48.2" },
 ]
 

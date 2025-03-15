@@ -26,6 +26,8 @@ class ChatHF:
         self.cache_dir = cache_dir
         self.tokenizer = None
         self.model = None
+        self.sampling_params = sampling_params
+        self.penalty_params = penalty_params
 
     def load(self) -> None:
         """
@@ -39,15 +41,18 @@ class ChatHF:
         if self.model is None:
             self.model = AutoModelForCausalLM.from_pretrained(
                 self.model_id,
-                device_map=self.device_map if self.device_map else None,
                 cache_dir=self.cache_dir,
                 torch_dtype="auto",
                 device_map="auto"
             )
 
     def format_params(self):
-        if self.sampling_params:         
-            kwargs = self.sampling_params
+        if self.sampling_params:    
+            # normalise "temp" to "temperature" (ensures you can pass temp to the model as this is how MLX/HF defines it)
+            if "temp" in self.sampling_params:
+                self.sampling_params["temperature"] = self.sampling_params.pop("temp")
+            
+            kwargs = self.sampling_params     
         else:
             kwargs = {}
 
@@ -69,7 +74,10 @@ class ChatHF:
         ).to(self.model.device)
 
         token_outputs = self.model.generate(
-            input_ids=token_inputs.to(self.model.device), max_new_tokens=max_new_tokens, 
+            input_ids=token_inputs.to(self.model.device), 
+            attention_mask=attention_mask,
+            max_new_tokens=max_new_tokens, 
+            do_sample=True,
             **kwargs
         )
 
