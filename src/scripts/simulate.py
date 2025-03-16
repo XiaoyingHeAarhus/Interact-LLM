@@ -95,19 +95,13 @@ def simulate_conversation(
 
         for attempt in range(max_retries):
             tutor_message = model.generate(tutor_history)
-            if not _detect_lang(
-                tutor_message.content
-            ):  # If no English is detected, proceed
+            if not _detect_lang(tutor_message.content):  # If no English is detected, proceed
                 break
-            print(
-                f"[WARNING]: Tutor response contains English (attempt {attempt + 1}/{max_retries}). Regenerating..."
-            )
+            print(f"[WARNING]: Tutor response contains English (attempt {attempt + 1}/{max_retries}). Regenerating...")
 
-        else:  # If the loop completes without breaking (i.e., all retries failed)
-            print(
-                "[ERROR]: Tutor failed to generate a fully Spanish response after max retries. Exiting..."
-            )
-            return None  # Exit function early
+        else: 
+            print("[ERROR]: Tutor failed to generate a fully Spanish response after max retries. Returning None...")
+            return None 
 
         tutor_history.messages.append(tutor_message)
 
@@ -181,6 +175,10 @@ def main():
             model=model, n_total_rounds=9, tutor_system_prompt=system_prompt
         )
 
+        if tutor_history is None:
+            print(f"[INFO]: Skipping run {n + 1}")
+            continue  # skip this run and continue to the next one
+
         # save chat
         chat_json = json.dumps(
             [msg.model_dump() for msg in tutor_history.messages],
@@ -201,6 +199,9 @@ def main():
         save_file_name = datetime.now().strftime("%Y%m%d-%H%M%S")
         with open(save_dir / f"{save_file_name}.json", "w") as outfile:
             outfile.write(chat_json)
+
+        # remove from mem 
+        del model
 
 
 if __name__ == "__main__":
