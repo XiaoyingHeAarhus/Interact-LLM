@@ -4,6 +4,7 @@ Utils for model loading either with a HF or MLX backend
 
 from pathlib import Path
 from typing import Literal
+
 import toml
 
 from interact_llm.llm.hf_wrapper import ChatHF
