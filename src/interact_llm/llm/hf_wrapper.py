@@ -6,8 +6,12 @@ from pathlib import Path
 from typing import Optional
 
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers.utils import logging
 
 from interact_llm.data_models.chat import ChatMessage
+
+# supress attention mask warning - only show errors (warning not important, it sets it automatically)
+logging.set_verbosity_error()
 
 
 class ChatHF:
