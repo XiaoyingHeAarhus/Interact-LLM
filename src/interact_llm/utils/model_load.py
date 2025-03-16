@@ -1,5 +1,5 @@
 """
-Utils for model loading
+Utils for model loading either with a HF or MLX backend
 """
 
 from pathlib import Path
@@ -68,10 +68,11 @@ def load_model_backend(
     models_config_path: Path,
     model_name: str,
     backend: Literal["mlx", "hf"] = "mlx",
+    token_path: Path = Path(__file__).parents[3] / "tokens" / "hf_token.txt",
     **model_kwargs,
 ) -> ChatHF | ChatMLX:
     """
-    Loads a model based on the specified backend ("mlx" or "hf").
+    Loads a model based on the specified backend ("mlx" or "hf"). Will try to login to HF 
 
     Args:
         models_config_path: Path to the models configuration.
@@ -102,7 +103,7 @@ def load_model_backend(
         if '401 Client Error' in str(e):
             print(f"Error loading model {model_name} from {backend} backend: {e}")
             print("Attempting to log in to Hugging Face...")
-            login_hf_token()  
+            login_hf_token(token_path)  
             model.load()
             print(f"Model {model_name} loaded successfully using {backend} backend (model_id = {model_id})")
         else:
