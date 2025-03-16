@@ -135,7 +135,8 @@ def main():
 
     for n in range(n_runs):
         print(f"[INFO]: Running simulation run {n + 1} out of {n_runs}")
-        # load model with MLX
+
+        # MODEL LOADING
         sampling_params = {
             "temp": 0.8,
             "top_p": 0.95,
@@ -144,6 +145,7 @@ def main():
         }  # default params on LM studio and llama.cpp (https://github.com/abetlen/llama-cpp-python/blob/main/llama_cpp/server/types.py#L25)
         penalty_params = {"repetition_penalty": 1.1}
 
+        cache_dir = Path(__file__).parents[3] / "models"
         models_config_file = Path(__file__).parents[2] / "configs" / "models.toml"
 
         model = load_model_backend(
@@ -151,8 +153,9 @@ def main():
             model_name=args.model_name,
             backend=args.backend,
             token_path=Path(__file__).parents[2] / "tokens" / "hf_token.txt",
+            cache_dir=cache_dir if args.backend == "hf" else None,
             sampling_params=sampling_params,
-            penalty_params=penalty_params,
+            penalty_params=penalty_params
         )
 
         # PROMPT FORMATTING
