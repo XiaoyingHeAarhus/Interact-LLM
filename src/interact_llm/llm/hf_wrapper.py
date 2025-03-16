@@ -64,6 +64,12 @@ class ChatHF:
     def generate(self, chat: list[ChatMessage], max_new_tokens: int = 200):
         kwargs = self.format_params()
 
+        if len(kwargs) > 0:
+            do_sample = True
+        else:
+            do_sample = False
+            print("[INFO:] No sampling parameters nor penalty parameters were passed. Setting do_sample to 'False'")
+
         prompt = self.tokenizer.apply_chat_template(
             chat, tokenize=False, add_generation_prompt=True,
         )
@@ -75,9 +81,9 @@ class ChatHF:
 
         token_outputs = self.model.generate(
             input_ids=token_inputs.to(self.model.device), 
-            attention_mask=attention_mask,
+            #attention_mask=attention_mask,
             max_new_tokens=max_new_tokens, 
-            do_sample=True,
+            do_sample=do_sample,
             **kwargs
         )
 
