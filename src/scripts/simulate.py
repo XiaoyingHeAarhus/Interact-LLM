@@ -143,7 +143,7 @@ def main():
             "min_p": 0.05,
             "top_k": 40,
         }  # default params on LM studio and llama.cpp (https://github.com/abetlen/llama-cpp-python/blob/main/llama_cpp/server/types.py#L25)
-        penality_params = {"repetition_penalty": 1.1}
+        penalty_params = {"repetition_penalty": 1.1}
 
         models_config_file = Path(__file__).parents[2] / "configs" / "models.toml"
 
@@ -153,7 +153,7 @@ def main():
             backend=args.backend,
             token_path=Path(__file__).parents[2] / "tokens" / "hf_token.txt",
             sampling_params=sampling_params,
-            penality_params=penality_params,
+            penalty_params=penalty_params,
         )
 
         # PROMPT FORMATTING
