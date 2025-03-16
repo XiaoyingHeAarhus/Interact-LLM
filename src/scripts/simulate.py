@@ -16,7 +16,10 @@ from tqdm import tqdm
 
 from interact_llm.data_models.chat import ChatHistory, ChatMessage
 from interact_llm.data_models.prompt import SystemPrompt, load_prompt_by_id
+from interact_llm.utils.model_load import load_model_backend
 from interact_llm.llm.mlx_wrapper import ChatMLX
+from interact_llm.llm.hf_wrapper import ChatHF
+
 from scripts.detect_lang import _detect_lang
 
 DEFAULT_PROMPT_VERSION = 3.0
@@ -31,16 +34,23 @@ def input_parse():
     )
     parser.add_argument(
         "--prompt_version",
-        help="version of prompt toml file",
+        help="version of prompt toml file in configs/prompts/",
         type=float,
         default=DEFAULT_PROMPT_VERSION,
     )
 
     parser.add_argument(
-        "--model_id",
-        help="model id as it is specified on hugging face",
+        "--model_name",
+        help="model name as specified in configs/models.toml",
         type=str,
-        default="mlx-community/Qwen2.5-7B-Instruct-1M-4bit",
+        default="qwen2.5:7b",
+    )
+
+    parser.add_argument(
+        "--backend",
+        help="whether to run a quantized model with MLX or a model with HF (transformers)",
+        type=str,
+        default="hf",
     )
 
     # save arguments to be parsed from the CLI
@@ -50,7 +60,7 @@ def input_parse():
 
 
 def simulate_conversation(
-    model: ChatMLX, n_total_rounds: int = 9, tutor_system_prompt=SystemPrompt
+    model: ChatMLX | ChatHF, n_total_rounds: int = 9, tutor_system_prompt=SystemPrompt
 ) -> ChatHistory:
     """
     Simulate an LLM conversation
@@ -133,16 +143,18 @@ def main():
             "min_p": 0.05,
             "top_k": 40,
         }  # default params on LM studio and llama.cpp (https://github.com/abetlen/llama-cpp-python/blob/main/llama_cpp/server/types.py#L25)
-        penality_params = {"repetition_penalty": 1.1}
+        penalty_params = {"repetition_penalty": 1.1}
 
-        model_id = args.model_id
-        model = ChatMLX(
-            model_id=model_id,
+        models_config_file = Path(__file__).parents[2] / "configs" / "models.toml"
+
+        model = load_model_backend(
+            models_config_path=models_config_file,
+            model_name=args.model_name,
+            backend=args.backend,
+            token_path=Path(__file__).parents[2] / "tokens" / "hf_token.txt",
             sampling_params=sampling_params,
-            penalty_params=penality_params,
+            penalty_params=penalty_params,
         )
-        print(f"[INFO]: Loading model {model_id} ... please wait")
-        model.load()
 
         # PROMPT FORMATTING
         prompt_version = args.prompt_version
@@ -177,7 +189,7 @@ def main():
         save_dir = (
             Path(__file__).parents[3]
             / "simulated_data"
-            / model_id.replace("/", "--")
+            / model.model_id.replace("/", "--")
             / f"v{str(prompt_version)}"
             / prompt_id
         )

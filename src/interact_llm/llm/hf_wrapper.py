@@ -18,16 +18,16 @@ class ChatHF:
     def __init__(
         self,
         model_id: str,
-        device: Optional[str] = None,
-        device_map: Optional[str] = None,
         cache_dir: Optional[Path] = None,
+        sampling_params: Optional[dict] = None,
+        penalty_params: Optional[dict] = None,
     ):
         self.model_id = model_id
-        self.device = device
-        self.device_map = device_map
         self.cache_dir = cache_dir
         self.tokenizer = None
         self.model = None
+        self.sampling_params = sampling_params
+        self.penalty_params = penalty_params
 
     def load(self) -> None:
         """
@@ -41,24 +41,50 @@ class ChatHF:
         if self.model is None:
             self.model = AutoModelForCausalLM.from_pretrained(
                 self.model_id,
-                device_map=self.device_map if self.device_map else None,
                 cache_dir=self.cache_dir,
+                torch_dtype="auto",
+                device_map="auto"
             )
-            if self.device:
-                self.model.to(self.device)
+
+    def format_params(self):
+        if self.sampling_params:    
+            # normalise "temp" to "temperature" (ensures you can pass temp to the model as this is how MLX/HF defines it)
+            if "temp" in self.sampling_params:
+                self.sampling_params["temperature"] = self.sampling_params.pop("temp")
+            
+            kwargs = self.sampling_params     
+        else:
+            kwargs = {}
+
+        if self.penalty_params:           
+            kwargs.update(self.penalty_params)
+
+        return kwargs
 
     def generate(self, chat: list[ChatMessage], max_new_tokens: int = 200):
-        ds = datetime.today().strftime("%Y-%m-%d")
+        kwargs = self.format_params()
+
+        if len(kwargs) > 0:
+            do_sample = True
+        else:
+            do_sample = False
+            print("[INFO:] No sampling parameters nor penalty parameters were passed. Setting do_sample to 'False'")
+
         prompt = self.tokenizer.apply_chat_template(
-            chat, tokenize=False, add_generation_prompt=True, date_string=ds
+            chat, tokenize=False, add_generation_prompt=True,
         )
 
         # tokenized inputs and outputs
         token_inputs = self.tokenizer.encode(
             prompt, add_special_tokens=False, return_tensors="pt"
-        )
+        ).to(self.model.device)
+
         token_outputs = self.model.generate(
-            input_ids=token_inputs.to(self.model.device), max_new_tokens=max_new_tokens
+            input_ids=token_inputs.to(self.model.device), 
+            #attention_mask=attention_mask,
+            max_new_tokens=max_new_tokens, 
+            do_sample=do_sample,
+            **kwargs
         )
 
         # chat (decoded output)
