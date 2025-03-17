@@ -9,6 +9,7 @@ import toml
 
 from interact_llm.llm.hf_wrapper import ChatHF
 from interact_llm.llm.mlx_wrapper import ChatMLX
+from interact_llm.llm.hf_gemma import ChatGemma
 
 
 def get_model_id(
@@ -72,7 +73,7 @@ def load_model_backend(
     token_path: Path = Path(__file__).parents[3] / "tokens" / "hf_token.txt",
     cache_dir: Optional[Path] = None,
     **model_kwargs,
-) -> ChatHF | ChatMLX:
+) -> ChatHF | ChatMLX | ChatGemma:
     """
     Loads a model based on the specified backend ("mlx" or "hf"). Will try to login to HF 
 
@@ -84,17 +85,25 @@ def load_model_backend(
             (e.g., sampling params, see documentation for ChatHF or ChatMLX)
 
     Returns:
-        ChatHF | ChatMLX: The loaded model object.
+        ChatHF | ChatMLX | ChatGemma: The loaded model object.
     """
     model_id = get_model_id(
         models_config_path=models_config_path, model_name=model_name, backend=backend
     )
 
-    # instantiate model based on backend
-    if backend == "mlx":
-        model = ChatMLX(model_id=model_id, **model_kwargs)
-    elif backend == "hf":
-        model = ChatHF(model_id=model_id, cache_dir=cache_dir, **model_kwargs)
+    if "gemma" in model_name: 
+        if backend == "mlx":
+            raise ValueError("Model is not supported in mlx yet")
+        # Gemma should be returned immediately if `backend == "hf"`
+        model = ChatGemma(model_id=model_id, cache_dir=cache_dir, **model_kwargs)
+    else:
+        # instantiate model based on backend
+        if backend == "mlx":
+            model = ChatMLX(model_id=model_id, **model_kwargs)
+        elif backend == "hf":
+            model = ChatHF(model_id=model_id, cache_dir=cache_dir, **model_kwargs)
+        else:
+            raise ValueError(f"Unsupported backend: {backend}")
 
     try: 
         model.load()
@@ -110,6 +119,6 @@ def load_model_backend(
             print(f"Model {model_name} loaded successfully using {backend} backend (model_id = {model_id})")
         else:
             print(f"Unexpected error occurred: {e}")
-            raise  #rReraise other unexpected errors
+            raise  # Reraise other unexpected errors
 
     return model
