@@ -16,10 +16,9 @@ from tqdm import tqdm
 
 from interact_llm.data_models.chat import ChatHistory, ChatMessage
 from interact_llm.data_models.prompt import SystemPrompt, load_prompt_by_id
-from interact_llm.utils.model_load import load_model_backend
-from interact_llm.llm.mlx_wrapper import ChatMLX
 from interact_llm.llm.hf_wrapper import ChatHF
-
+from interact_llm.llm.mlx_wrapper import ChatMLX
+from interact_llm.utils.model_load import load_model_backend
 from scripts.detect_lang import _detect_lang
 
 DEFAULT_PROMPT_VERSION = 3.0
@@ -96,19 +95,13 @@ def simulate_conversation(
 
         for attempt in range(max_retries):
             tutor_message = model.generate(tutor_history)
-            if not _detect_lang(
-                tutor_message.content
-            ):  # If no English is detected, proceed
+            if not _detect_lang(tutor_message.content):  # If no English is detected, proceed
                 break
-            print(
-                f"[WARNING]: Tutor response contains English (attempt {attempt + 1}/{max_retries}). Regenerating..."
-            )
+            print(f"[WARNING]: Tutor response contains English (attempt {attempt + 1}/{max_retries}). Regenerating...")
 
-        else:  # If the loop completes without breaking (i.e., all retries failed)
-            print(
-                "[ERROR]: Tutor failed to generate a fully Spanish response after max retries. Exiting..."
-            )
-            return None  # Exit function early
+        else: 
+            print("[ERROR]: Tutor failed to generate a fully Spanish response after max retries. Returning None...")
+            return None 
 
         tutor_history.messages.append(tutor_message)
 
@@ -136,7 +129,8 @@ def main():
 
     for n in range(n_runs):
         print(f"[INFO]: Running simulation run {n + 1} out of {n_runs}")
-        # load model with MLX
+
+        # MODEL LOADING
         sampling_params = {
             "temp": 0.8,
             "top_p": 0.95,
@@ -145,6 +139,7 @@ def main():
         }  # default params on LM studio and llama.cpp (https://github.com/abetlen/llama-cpp-python/blob/main/llama_cpp/server/types.py#L25)
         penalty_params = {"repetition_penalty": 1.1}
 
+        cache_dir = Path(__file__).parents[3] / "models"
         models_config_file = Path(__file__).parents[2] / "configs" / "models.toml"
 
         model = load_model_backend(
@@ -152,8 +147,9 @@ def main():
             model_name=args.model_name,
             backend=args.backend,
             token_path=Path(__file__).parents[2] / "tokens" / "hf_token.txt",
+            cache_dir=cache_dir if args.backend == "hf" else None,
             sampling_params=sampling_params,
-            penalty_params=penalty_params,
+            penalty_params=penalty_params
         )
 
         # PROMPT FORMATTING
@@ -179,6 +175,10 @@ def main():
             model=model, n_total_rounds=9, tutor_system_prompt=system_prompt
         )
 
+        if tutor_history is None:
+            print(f"[INFO]: Skipping run {n + 1}")
+            continue  # skip this run and continue to the next one
+
         # save chat
         chat_json = json.dumps(
             [msg.model_dump() for msg in tutor_history.messages],
@@ -199,6 +199,9 @@ def main():
         save_file_name = datetime.now().strftime("%Y%m%d-%H%M%S")
         with open(save_dir / f"{save_file_name}.json", "w") as outfile:
             outfile.write(chat_json)
+
+        # remove from mem 
+        del model
 
 
 if __name__ == "__main__":

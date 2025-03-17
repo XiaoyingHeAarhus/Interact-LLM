@@ -2,12 +2,16 @@
 Chat Model
 """
 
-from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from interact_llm.data_models.chat import ChatMessage
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers.utils import logging
+
+from interact_llm.data_models.chat import ChatMessage
+
+# supress attention mask warning - only show errors (warning not important, it sets it automatically)
+logging.set_verbosity_error()
 
 
 class ChatHF:
@@ -43,20 +47,20 @@ class ChatHF:
                 self.model_id,
                 cache_dir=self.cache_dir,
                 torch_dtype="auto",
-                device_map="auto"
+                device_map="auto",
             )
 
     def format_params(self):
-        if self.sampling_params:    
+        if self.sampling_params:
             # normalise "temp" to "temperature" (ensures you can pass temp to the model as this is how MLX/HF defines it)
             if "temp" in self.sampling_params:
                 self.sampling_params["temperature"] = self.sampling_params.pop("temp")
-            
-            kwargs = self.sampling_params     
+
+            kwargs = self.sampling_params
         else:
             kwargs = {}
 
-        if self.penalty_params:           
+        if self.penalty_params:
             kwargs.update(self.penalty_params)
 
         return kwargs
@@ -68,10 +72,16 @@ class ChatHF:
             do_sample = True
         else:
             do_sample = False
-            print("[INFO:] No sampling parameters nor penalty parameters were passed. Setting do_sample to 'False'")
+            print(
+                "[INFO:] No sampling parameters nor penalty parameters were passed. Setting do_sample to 'False'"
+            )
 
+        self.tokenizer.use_default_system_prompt = False # ensure no system prompt is there
+        
         prompt = self.tokenizer.apply_chat_template(
-            chat, tokenize=False, add_generation_prompt=True,
+            chat,
+            tokenize=False,
+            add_generation_prompt=True,
         )
 
         # tokenized inputs and outputs
@@ -80,15 +90,16 @@ class ChatHF:
         ).to(self.model.device)
 
         token_outputs = self.model.generate(
-            input_ids=token_inputs.to(self.model.device), 
-            #attention_mask=attention_mask,
-            max_new_tokens=max_new_tokens, 
+            input_ids=token_inputs.to(self.model.device),
+            max_new_tokens=max_new_tokens,
             do_sample=do_sample,
-            **kwargs
+            **kwargs,
         )
 
         # chat (decoded output)
-        response = self.tokenizer.decode((token_outputs[:, token_inputs.shape[1] :])[0])
+        response = self.tokenizer.decode(
+            (token_outputs[:, token_inputs.shape[1] :])[0], skip_special_tokens=True
+        )
 
         chat_message = ChatMessage(role="assistant", content=response)
 

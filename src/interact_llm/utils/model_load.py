@@ -3,7 +3,8 @@ Utils for model loading either with a HF or MLX backend
 """
 
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Optional
+
 import toml
 
 from interact_llm.llm.hf_wrapper import ChatHF
@@ -69,6 +70,7 @@ def load_model_backend(
     model_name: str,
     backend: Literal["mlx", "hf"] = "mlx",
     token_path: Path = Path(__file__).parents[3] / "tokens" / "hf_token.txt",
+    cache_dir: Optional[Path] = None,
     **model_kwargs,
 ) -> ChatHF | ChatMLX:
     """
@@ -92,7 +94,7 @@ def load_model_backend(
     if backend == "mlx":
         model = ChatMLX(model_id=model_id, **model_kwargs)
     elif backend == "hf":
-        model = ChatHF(model_id=model_id, **model_kwargs)
+        model = ChatHF(model_id=model_id, cache_dir=cache_dir, **model_kwargs)
 
     try: 
         model.load()
