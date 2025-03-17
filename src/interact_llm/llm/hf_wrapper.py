@@ -6,12 +6,8 @@ from pathlib import Path
 from typing import Optional
 
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from transformers.utils import logging
 
 from interact_llm.data_models.chat import ChatMessage
-
-# supress attention mask warning - only show errors (warning not important, it sets it automatically)
-logging.set_verbosity_error()
 
 
 class ChatHF:
@@ -25,6 +21,7 @@ class ChatHF:
         cache_dir: Optional[Path] = None,
         sampling_params: Optional[dict] = None,
         penalty_params: Optional[dict] = None,
+        eos_token: Optional[str] = None
     ):
         self.model_id = model_id
         self.cache_dir = cache_dir
@@ -32,6 +29,7 @@ class ChatHF:
         self.model = None
         self.sampling_params = sampling_params
         self.penalty_params = penalty_params
+        self.eos_token = eos_token
 
     def load(self) -> None:
         """
@@ -65,7 +63,7 @@ class ChatHF:
 
         return kwargs
 
-    def generate(self, chat: list[ChatMessage], max_new_tokens: int = 200):
+    def generate(self, chat: list[ChatMessage], max_new_tokens: int = 3000):
         kwargs = self.format_params()
 
         if len(kwargs) > 0:
@@ -78,28 +76,29 @@ class ChatHF:
 
         self.tokenizer.use_default_system_prompt = False # ensure no system prompt is there
         
-        prompt = self.tokenizer.apply_chat_template(
+        text = self.tokenizer.apply_chat_template(
             chat,
             tokenize=False,
             add_generation_prompt=True,
         )
 
         # tokenized inputs and outputs
-        token_inputs = self.tokenizer.encode(
-            prompt, add_special_tokens=False, return_tensors="pt"
+        model_inputs = self.tokenizer(
+            text, return_tensors="pt"
         ).to(self.model.device)
 
-        token_outputs = self.model.generate(
-            input_ids=token_inputs.to(self.model.device),
+        input_len = model_inputs["input_ids"].shape[-1]
+
+        output = self.model.generate(
+            **model_inputs,
+
             max_new_tokens=max_new_tokens,
             do_sample=do_sample,
             **kwargs,
         )
 
         # chat (decoded output)
-        response = self.tokenizer.decode(
-            (token_outputs[:, token_inputs.shape[1] :])[0], skip_special_tokens=True
-        )
+        response = self.tokenizer.decode(output[0][input_len:], skip_special_tokens=True)
 
         chat_message = ChatMessage(role="assistant", content=response)
 
