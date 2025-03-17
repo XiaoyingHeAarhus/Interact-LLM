@@ -76,6 +76,8 @@ class ChatHF:
                 "[INFO:] No sampling parameters nor penalty parameters were passed. Setting do_sample to 'False'"
             )
 
+        self.tokenizer.use_default_system_prompt = False # ensure no system prompt is there
+        
         prompt = self.tokenizer.apply_chat_template(
             chat,
             tokenize=False,
