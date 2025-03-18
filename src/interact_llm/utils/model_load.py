@@ -9,7 +9,7 @@ import toml
 
 from interact_llm.llm.hf_wrapper import ChatHF
 from interact_llm.llm.mlx_wrapper import ChatMLX
-from interact_llm.llm.hf_gemma import ChatGemma
+from interact_llm.llm.hf_gemma import ChatHFGemma
 
 
 def get_model_id(
@@ -73,7 +73,7 @@ def load_model_backend(
     token_path: Path = Path(__file__).parents[3] / "tokens" / "hf_token.txt",
     cache_dir: Optional[Path] = None,
     **model_kwargs,
-) -> ChatHF | ChatMLX | ChatGemma:
+) -> ChatHF | ChatMLX | ChatHFGemma:
     """
     Loads a model based on the specified backend ("mlx" or "hf"). Will try to login to HF 
 
@@ -95,7 +95,7 @@ def load_model_backend(
         if backend == "mlx":
             raise ValueError("Model is not supported in mlx yet")
         # Gemma should be returned immediately if `backend == "hf"`
-        model = ChatGemma(model_id=model_id, cache_dir=cache_dir, **model_kwargs)
+        model = ChatHFGemma(model_id=model_id, cache_dir=cache_dir, **model_kwargs)
     else:
         # instantiate model based on backend
         if backend == "mlx":

@@ -21,6 +21,7 @@ dependencies = [
     "torch>=2.6.0",
     "tqdm>=4.67.1",
     "transformers>=4.48.2",
+    "pillow>=11.1.0",
 ]
 
 [build-system]
@@ -35,3 +36,6 @@ dev = [
 [tool.ruff]
 src = ["src"]
 lint.select = ["F", "E", "W", "I001"] # F for pyflakes, E + W for pycodestyle errors + warnings, #I001 for isort
+
+[tool.uv.sources]
+transformers = { git = "https://github.com/huggingface/transformers", rev = "v4.49.0-Gemma-3" }

@@ -10,7 +10,7 @@ from transformers import AutoProcessor, Gemma3ForConditionalGeneration
 from interact_llm.data_models.chat import ChatMessage
 
 
-class ChatGemma:
+class ChatHFGemma:
     """
     Model wrapper for loading and using a HuggingFace causal language model with HF's own libraries
     """
@@ -61,7 +61,7 @@ class ChatGemma:
     def format_chat_for_gemma(self, chat: list[ChatMessage]) -> list[dict]:
         formatted_chat = []
 
-        for msg in chat:
+        for msg in chat.messages:
             formatted_chat.append({
                 "role": msg.role,
                 "content": [{"type": "text", "text": msg.content}]
@@ -80,19 +80,16 @@ class ChatGemma:
                 "[INFO:] No sampling parameters nor penalty parameters were passed. Setting do_sample to 'False'"
             )
 
-        formatted_chat = self.format_chat_for_gemma(chat)
-
         self.processor.use_default_system_prompt = False # ensure no system prompt is there
-        
-        text = self.processor.apply_chat_template(
-            formatted_chat,
-            tokenize=False,
-            add_generation_prompt=True,
-        )
 
-        # tokenized inputs and outputs
-        model_inputs = self.tokenizer(
-            text, return_tensors="pt"
+        formatted_chat = self.format_chat_for_gemma(chat)
+       
+        model_inputs = self.processor.apply_chat_template(
+            formatted_chat,
+            tokenize=True,
+            return_dict=True,
+            add_generation_prompt=True,
+            return_tensors = "pt"
         ).to(self.model.device)
 
         input_len = model_inputs["input_ids"].shape[-1]
