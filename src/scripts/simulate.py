@@ -90,7 +90,7 @@ def simulate_conversation(
 
     for _ in tqdm(range(n_total_rounds)):
         # tutor in assistant role responds to user (first time to the pre-fixed "hola")
-        max_retries = 5
+        max_retries = 10
         tutor_message = None
 
         for attempt in range(max_retries):
@@ -125,17 +125,17 @@ def simulate_conversation(
 def main():
     args = input_parse()
 
-    n_runs = 10
+    n_runs = 30
 
     for n in range(n_runs):
         print(f"[INFO]: Running simulation run {n + 1} out of {n_runs}")
 
         # MODEL LOADING
         sampling_params = {
-            "temp": 0.8,
-            "top_p": 0.95,
+            "temp": 1,
+            "top_p": 1.0,
             "min_p": 0.05,
-            "top_k": 40,
+            "top_k": 50,
         }  # default params on LM studio and llama.cpp (https://github.com/abetlen/llama-cpp-python/blob/main/llama_cpp/server/types.py#L25)
         penalty_params = {"repetition_penalty": 1.1}
 

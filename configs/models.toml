@@ -9,3 +9,8 @@ hf = "Qwen/Qwen2.5-7B-Instruct"
 name = "llama3.1:8b"
 mlx = "mlx-community/meta-Llama-3.1-8B-Instruct-4bit"
 hf = "meta-llama/Llama-3.1-8B-Instruct"
+
+[[models]]
+name = "mistral:7b"
+mlx = "mlx-community/Mistral-7B-Instruct-v0.3-4bit"
+hf = "mistralai/Mistral-7B-Instruct-v0.3"
