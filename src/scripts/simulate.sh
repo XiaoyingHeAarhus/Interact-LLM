@@ -1,6 +1,6 @@
 #!/bin/bash
 
-models=("llama3.1:8b" "qwen2.5:7b")
+models=("qwen2.5:7b" "llama3.1:8b" "mistral:7b")
 prompt_ids=("A1" "B1" "C1")
 backend="hf"
 
