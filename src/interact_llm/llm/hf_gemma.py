@@ -5,6 +5,7 @@ HF wrapper for Gemma
 from pathlib import Path
 from typing import Optional
 
+import torch
 from transformers import AutoProcessor, Gemma3ForConditionalGeneration
 
 from interact_llm.data_models.chat import ChatMessage
@@ -35,12 +36,12 @@ class ChatHFGemma:
         """
         if self.processor is None:
             self.processor = AutoProcessor.from_pretrained(
-                self.model_id, cache_dir=self.cache_dir
+                self.model_id, cache_dir=self.cache_dir, use_fast=True
             )
 
         if self.model is None:
             self.model = Gemma3ForConditionalGeneration.from_pretrained(
-                self.model_id, device_map="auto"
+                self.model_id, device_map="auto", cache_dir=self.cache_dir
             ).eval() #.eval comes from gemma's model card (https://huggingface.co/google/gemma-3-12b-it)
 
     def format_params(self):
@@ -89,18 +90,25 @@ class ChatHFGemma:
             tokenize=True,
             return_dict=True,
             add_generation_prompt=True,
-            return_tensors = "pt"
-        ).to(self.model.device)
+            return_tensors = "pt",
+            # params to fix flash attn error: https://github.com/google-deepmind/gemma/issues/169
+            padding="longest",
+            pad_to_multiple_of=8, 
+        ).to(self.model.device, dtype=torch.bfloat16)
+        
+        # fix flash attn error: https://github.com/google-deepmind/gemma/issues/169
+        self.processor.tokenizer.padding_side = "left"
 
         input_len = model_inputs["input_ids"].shape[-1]
         
-        output = self.model.generate(
-            **model_inputs,
+        with torch.inference_mode(): 
+            output = self.model.generate(
+                **model_inputs,
 
-            max_new_tokens=max_new_tokens,
-            do_sample=do_sample,
-            **kwargs,
-        )
+                max_new_tokens=max_new_tokens,
+                do_sample=do_sample,
+                **kwargs,
+            )
 
         # chat (decoded output)
         response = self.processor.decode(output[0][input_len:], skip_special_tokens=True)
