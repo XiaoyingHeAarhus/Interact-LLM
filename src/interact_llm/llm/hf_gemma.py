@@ -41,8 +41,9 @@ class ChatHFGemma:
 
         if self.model is None:
             self.model = Gemma3ForConditionalGeneration.from_pretrained(
-                self.model_id, device_map="auto", cache_dir=self.cache_dir
-            ).eval() #.eval comes from gemma's model card (https://huggingface.co/google/gemma-3-12b-it)
+                self.model_id, device_map="auto", cache_dir=self.cache_dir, 
+                max_memory={0: "48GB", 1: "48GB"}).eval()
+    
 
     def format_params(self):
         if self.sampling_params:
