@@ -22,6 +22,7 @@ class ChatHFGemma:
         cache_dir: Optional[Path] = None,
         sampling_params: Optional[dict] = None,
         penalty_params: Optional[dict] = None,
+        max_memory: Optional[dict] = {0: "48GB", 1: "48GB"} # specify the amount of GPUs and their vrams - Gemma needs this to be able to use 2 gpus (it is too slow on a single)
     ):
         self.model_id = model_id
         self.cache_dir = cache_dir
@@ -29,6 +30,7 @@ class ChatHFGemma:
         self.model = None
         self.sampling_params = sampling_params
         self.penalty_params = penalty_params
+        self.max_memory = max_memory
 
     def load(self) -> None:
         """
@@ -40,9 +42,22 @@ class ChatHFGemma:
             )
 
         if self.model is None:
-            self.model = Gemma3ForConditionalGeneration.from_pretrained(
-                self.model_id, device_map="auto", cache_dir=self.cache_dir, 
-                max_memory={0: "48GB", 1: "48GB"}).eval()
+            try:
+                self.model = Gemma3ForConditionalGeneration.from_pretrained(
+                    self.model_id, device_map="auto", cache_dir=self.cache_dir, 
+                    max_memory=self.max_memory
+                ).eval()
+            except Exception as e:
+                print(f"Failed to load model with max_memory={self.max_memory}. Error: {e}")
+                print("Retrying without max_memory...")
+                try:
+                    self.model = Gemma3ForConditionalGeneration.from_pretrained(
+                        self.model_id, device_map="auto", cache_dir=self.cache_dir
+                    ).eval()
+                except Exception as e:
+                    print(f"Model loading failed even without max_memory. Error: {e}")
+                    raise
+
     
 
     def format_params(self):
