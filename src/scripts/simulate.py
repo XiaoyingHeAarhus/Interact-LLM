@@ -1,10 +1,5 @@
 """
 Simulate two chat LLMs talking to each other
-
-Model tested currently:
-- mlx-community/Qwen2.5-7B-Instruct-1M-4bit
-- mlx-community/meta-Llama-3.1-8B-Instruct-4bit
-
 """
 
 import argparse
