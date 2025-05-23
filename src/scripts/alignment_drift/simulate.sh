@@ -6,6 +6,6 @@ backend="hf"
 
 for model in "${models[@]}"; do
     for prompt_id in "${prompt_ids[@]}"; do
-            uv run python src/scripts/simulate.py --model_name "$model" --prompt_id "$prompt_id" --backend "$backend"
+            uv run python src/scripts/alignment_drift/simulate.py --model_name "$model" --prompt_id "$prompt_id" --backend "$backend"
     done
 done

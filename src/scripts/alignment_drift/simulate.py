@@ -14,7 +14,7 @@ from interact_llm.data_models.prompt import SystemPrompt, load_prompt_by_id
 from interact_llm.llm.hf_wrapper import ChatHF
 from interact_llm.llm.mlx_wrapper import ChatMLX
 from interact_llm.utils.model_load import load_model_backend
-from scripts.detect_lang import _detect_lang
+from scripts.alignment_drift.detect_lang import _detect_lang
 
 DEFAULT_PROMPT_VERSION = 3.0
 
