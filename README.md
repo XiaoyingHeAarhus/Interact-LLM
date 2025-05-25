@@ -10,13 +10,13 @@ The `src` folder contains:
 | Folder | Description |
 |--------|-------------|
 | [`interact_llm`](src/interact_llm/) | Inference engine and terminal-based chatbot |
-| [`scripts`](src/scripts/) | Experimental setups using the backend, including [alignment-drift-simulation](src/scripts/alignment-drift-simulation) created for [Almasi & Kristensen-McLachlan (2025)](https://arxiv.org/abs/2505.08351).|
+| [`scripts`](src/scripts/) | Experimental setups using the backend linked to specific publications, including [alignment-drift](/src/scripts/alignment-drift) created for [Almasi & Kristensen-McLachlan (2025)](https://arxiv.org/abs/2505.08351).|
 
 # 📝 Research 
-The `Interact-LLM` repository is version-tagged with distinct releases pertaining to particular publications; 
-| Paper | `Interact-LLM` version| `Interact-LLM` experiment | Paper Repo (Analysis) |
+The `Interact-LLM` repository uses version tags linked to specific papers. Each paper has its own folder in  [src/scripts](/src/scripts), and the version tag includes the corresponding paper name:
+| Paper | `Interact-LLM` Version Suffix| Scripts folder (Inference code) | Paper Repository (Analysis code) |
 |--------|---------------------|------------| ------ |
-|[Almasi & Kristensen-McLachlan (2025)](https://arxiv.org/abs/2505.08351)| `v1.0.0-alignment-drift` | [scripts/alignment-drift-simulation]() | [INTERACT-LLM/alignment-drift-llms](https://github.com/INTERACT-LLM/alignment-drift-llms)|
+|[Almasi & Kristensen-McLachlan (2025)](https://arxiv.org/abs/2505.08351)| `vX.X.X-alignment-drift` | [scripts/alignment-drift](/src/scripts/alignment_drift/) | [INTERACT-LLM/alignment-drift-llms](https://github.com/INTERACT-LLM/alignment-drift-llms)|
 
 # 🛠️ Technical Requirements
 The code was run on `Python 3.12.3` on both a macOS (`15.3.1`) and Ubuntu system (`24.04`). The project also requires:
@@ -24,7 +24,6 @@ The code was run on `Python 3.12.3` on both a macOS (`15.3.1`) and Ubuntu system
 |----------|--------------------------------------------------------------------------------------|
 | [make](https://www.gnu.org/software/make/manual/make.html) | Installed via [Homebrew](https://formulae.brew.sh/formula/make)                  |
 | [uv](https://docs.astral.sh/uv/)                         | Installed through this project's `makefile` (see [Usage](#usage))                 |
-
 
 # ⚙️ Usage 
 
@@ -34,11 +33,19 @@ To install [`uv`](https://docs.astral.sh/uv/) on macOS/Linux and set up a virtua
 make setup
 ```
 
+### Add HF Token
+If you are interested in running gated models such as `Llama-3.1-8B-Instruct`, you will need to pass a Hugging Face token with read access. 
+
+Create a file called `hf_token.txt` with the token and place it in the [tokens](/tokens) folder. The file will **not** be pushed to `GitHub`.
+
 ## Run Chatbot in Terminal App
 To experiment with interacting with a chatbot (prompted to act as a Spanish language tutor currently), run in the terminal 
 ```bash
 uv run python -m interact_llm 
 ```
 
+⚠️ **IMPORTANT**: This is very early development. Functionality is limited.
+
+
 ## Reproduce Experiments 
-Refer to the individual READMEs in the folders in `scripts` e.g., [alignment-drift-simulation](src/scripts/alignment-drift-simulation).
+Refer to the individual READMEs in `scripts` e.g., [alignment-drift](src/scripts/alignment-drift).
