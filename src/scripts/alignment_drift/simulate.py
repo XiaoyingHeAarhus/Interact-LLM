@@ -134,14 +134,14 @@ def main():
         }  # default params on LM studio and llama.cpp (https://github.com/abetlen/llama-cpp-python/blob/main/llama_cpp/server/types.py#L25)
         penalty_params = {"repetition_penalty": 1.1}
 
-        cache_dir = Path(__file__).parents[3] / "models"
-        models_config_file = Path(__file__).parents[2] / "configs" / "models.toml"
+        cache_dir = Path(__file__).parents[4] / "models"
+        models_config_file = Path(__file__).parents[3] / "configs" / "models.toml"
 
         model = load_model_backend(
             models_config_path=models_config_file,
             model_name=args.model_name,
             backend=args.backend,
-            token_path=Path(__file__).parents[2] / "tokens" / "hf_token.txt",
+            token_path=Path(__file__).parents[3] / "tokens" / "hf_token.txt",
             cache_dir=cache_dir if args.backend == "hf" else None,
             sampling_params=sampling_params,
             penalty_params=penalty_params
@@ -151,7 +151,7 @@ def main():
         prompt_version = args.prompt_version
         prompt_id = args.prompt_id
         prompt_file = (
-            Path(__file__).parents[2]
+            Path(__file__).parents[3]
             / "configs"
             / "prompts"
             / f"v{str(prompt_version)}.toml"
@@ -182,7 +182,7 @@ def main():
         )
 
         save_dir = (
-            Path(__file__).parents[3]
+            Path(__file__).parents[4]
             / "simulated_data"
             / model.model_id.replace("/", "--")
             / f"v{str(prompt_version)}"
