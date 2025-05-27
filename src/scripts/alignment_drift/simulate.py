@@ -14,7 +14,7 @@ from interact_llm.data_models.prompt import SystemPrompt, load_prompt_by_id
 from interact_llm.llm.hf_wrapper import ChatHF
 from interact_llm.llm.mlx_wrapper import ChatMLX
 from interact_llm.utils.model_load import load_model_backend
-from scripts.detect_lang import _detect_lang
+from scripts.alignment_drift.detect_lang import _detect_lang
 
 DEFAULT_PROMPT_VERSION = 3.0
 
@@ -60,6 +60,14 @@ def simulate_conversation(
     Simulate an LLM conversation
 
     Note that we are interested in the tutor only, but each has their own history in which they are the assistant, responding to a user.
+
+    Args:
+        model: The chat model to use for the simulation.
+        n_total_rounds: The number of rounds of conversation to simulate.
+        tutor_system_prompt: The system prompt for the tutor LLM.
+
+    Returns:
+        tutor_history: The chat history of the tutor after the simulation.
     """
 
     # define histories
@@ -79,7 +87,7 @@ def simulate_conversation(
             ),
             ChatMessage(
                 role="user", content="Hola"
-            ),  # pre-fixed what the tutor LLM receives
+            ),  # pre-fixed what the tutor LLM receives in the first round
         ]
     )
 
@@ -131,17 +139,17 @@ def main():
             "top_p": 1.0,
             "min_p": 0.05,
             "top_k": 50,
-        }  # default params on LM studio and llama.cpp (https://github.com/abetlen/llama-cpp-python/blob/main/llama_cpp/server/types.py#L25)
+        } 
         penalty_params = {"repetition_penalty": 1.1}
 
-        cache_dir = Path(__file__).parents[3] / "models"
-        models_config_file = Path(__file__).parents[2] / "configs" / "models.toml"
+        cache_dir = Path(__file__).parents[4] / "models"
+        models_config_file = Path(__file__).parents[3] / "configs" / "models.toml"
 
         model = load_model_backend(
             models_config_path=models_config_file,
             model_name=args.model_name,
             backend=args.backend,
-            token_path=Path(__file__).parents[2] / "tokens" / "hf_token.txt",
+            token_path=Path(__file__).parents[3] / "tokens" / "hf_token.txt",
             cache_dir=cache_dir if args.backend == "hf" else None,
             sampling_params=sampling_params,
             penalty_params=penalty_params
@@ -151,7 +159,7 @@ def main():
         prompt_version = args.prompt_version
         prompt_id = args.prompt_id
         prompt_file = (
-            Path(__file__).parents[2]
+            Path(__file__).parents[3]
             / "configs"
             / "prompts"
             / f"v{str(prompt_version)}.toml"
@@ -182,7 +190,7 @@ def main():
         )
 
         save_dir = (
-            Path(__file__).parents[3]
+            Path(__file__).parents[4]
             / "simulated_data"
             / model.model_id.replace("/", "--")
             / f"v{str(prompt_version)}"

@@ -16,3 +16,8 @@ check-format: # for later automated formats where pre-commit fails if this check
 	@echo "[INFO:] Checking formatting ..."
 	uv run ruff format . --check						
 	uv run ruff check
+
+setup:
+	@echo "[INFO:] Installing uv and python dependencies ..."
+	make add-uv
+	make install
