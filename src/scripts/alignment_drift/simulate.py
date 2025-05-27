@@ -60,6 +60,14 @@ def simulate_conversation(
     Simulate an LLM conversation
 
     Note that we are interested in the tutor only, but each has their own history in which they are the assistant, responding to a user.
+
+    Args:
+        model: The chat model to use for the simulation.
+        n_total_rounds: The number of rounds of conversation to simulate.
+        tutor_system_prompt: The system prompt for the tutor LLM.
+
+    Returns:
+        tutor_history: The chat history of the tutor after the simulation.
     """
 
     # define histories
@@ -79,7 +87,7 @@ def simulate_conversation(
             ),
             ChatMessage(
                 role="user", content="Hola"
-            ),  # pre-fixed what the tutor LLM receives
+            ),  # pre-fixed what the tutor LLM receives in the first round
         ]
     )
 
@@ -131,7 +139,7 @@ def main():
             "top_p": 1.0,
             "min_p": 0.05,
             "top_k": 50,
-        }  # default params on LM studio and llama.cpp (https://github.com/abetlen/llama-cpp-python/blob/main/llama_cpp/server/types.py#L25)
+        } 
         penalty_params = {"repetition_penalty": 1.1}
 
         cache_dir = Path(__file__).parents[4] / "models"
