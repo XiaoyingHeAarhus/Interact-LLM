@@ -6,17 +6,17 @@ This repository contains code for experiments exploring how large language model
 🔗 [Read about the INTERACT-LLM project (in Danish)](https://cc.au.dk/aktuelt/nyheder/nyhed/artikel/forskere-fra-arts-vil-udvikle-en-chatbot-der-kan-fremme-sprogindlaering),
 
 # 🚀 Overview
-The `src` folder contains:
+The [`src`](/src/) folder contains:
 | Folder | Description |
 |--------|-------------|
 | [`interact_llm`](src/interact_llm/) | Inference engine and terminal-based chatbot |
-| [`scripts`](src/scripts/) | Experimental setups using the backend linked to specific publications, including [alignment-drift](/src/scripts/alignment_drift/README.md) created for [Almasi & Kristensen-McLachlan (2025)](https://arxiv.org/abs/2505.08351).|
+| [`scripts`](src/scripts/) | Experimental setups using the backend linked to specific publications, including [alignment-drift](/src/scripts/alignment_drift) created for [Almasi & Kristensen-McLachlan (2025)](https://arxiv.org/abs/2505.08351).|
 
 # 📝 Research 
 The `Interact-LLM` repository uses version tags linked to specific papers. Each paper has its own folder in  [/src/scripts](/src/scripts), and the version tag includes the corresponding paper name:
-| Paper | `Interact-LLM` Version Suffix| Scripts folder (Inference code) | Paper Repository (Analysis code) |
+| Paper | `Interact-LLM` Version Suffix| [`scripts`](src/scripts/) folder (Inference code) | Paper Repository (Analysis code) |
 |--------|---------------------|------------| ------ |
-|[Almasi & Kristensen-McLachlan (2025)](https://arxiv.org/abs/2505.08351)| `vX.X.X-alignment-drift` | [/src/scripts/alignment_drift](/src/scripts/alignment_drift/README.md) | [INTERACT-LLM/alignment-drift-llms](https://github.com/INTERACT-LLM/alignment-drift-llms)|
+|[Almasi & Kristensen-McLachlan (2025)](https://arxiv.org/abs/2505.08351)| `vX.X.X-alignment-drift` | [/src/scripts/alignment_drift](/src/scripts/alignment_drift) | [INTERACT-LLM/alignment-drift-llms](https://github.com/INTERACT-LLM/alignment-drift-llms)|
 
 # 🛠️ Technical Requirements
 The code was run on `Python 3.12.3` on both a macOS (`15.3.1`) and Ubuntu system (`24.04`). The project also requires:
@@ -48,4 +48,4 @@ uv run python -m interact_llm
 
 
 ## Reproduce Experiments 
-Refer to the individual READMEs in `scripts` e.g., [alignment-drift](src/scripts/alignment-drift).
+Refer to the individual READMEs in `scripts` e.g., [alignment-drift](/src/scripts/alignment_drift).
