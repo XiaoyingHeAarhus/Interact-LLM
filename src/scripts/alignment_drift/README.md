@@ -75,7 +75,7 @@ If you use our work, please cite:
 
 <div style="margin-top: 1.2em;"></div>
 
-> Note: Currently, this work exists only as a preprint. The final version is forthcoming.
+> Note: This paper has been accepted to the ACL workshop [BEA2025](https://sig-edu.org/bea/2025) (*20th Workshop on Innovative Use of NLP for Building Educational Applications*). The final version, appearing in the ACL Anthology, is forthcoming.
 
 # ✨️ Acknowledgements
 Simulations in [Almasi & Kristensen-McLachlan (2025)](https://arxiv.org/abs/2505.08351) were run entirely using Huggingface's [transformers](https://github.com/huggingface/transformers) library (specified as a `hf`).
