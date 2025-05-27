@@ -16,7 +16,7 @@ The `src` folder contains:
 The `Interact-LLM` repository uses version tags linked to specific papers. Each paper has its own folder in  [/src/scripts](/src/scripts), and the version tag includes the corresponding paper name:
 | Paper | `Interact-LLM` Version Suffix| Scripts folder (Inference code) | Paper Repository (Analysis code) |
 |--------|---------------------|------------| ------ |
-|[Almasi & Kristensen-McLachlan (2025)](https://arxiv.org/abs/2505.08351)| `vX.X.X-alignment-drift` | [/src/scripts/alignment-drift](/src/scripts/alignment_drift/) | [INTERACT-LLM/alignment-drift-llms](https://github.com/INTERACT-LLM/alignment-drift-llms)|
+|[Almasi & Kristensen-McLachlan (2025)](https://arxiv.org/abs/2505.08351)| `vX.X.X-alignment-drift` | [/src/scripts/alignment-drift](/src/scripts/alignment_drift/README.md) | [INTERACT-LLM/alignment-drift-llms](https://github.com/INTERACT-LLM/alignment-drift-llms)|
 
 # 🛠️ Technical Requirements
 The code was run on `Python 3.12.3` on both a macOS (`15.3.1`) and Ubuntu system (`24.04`). The project also requires:
