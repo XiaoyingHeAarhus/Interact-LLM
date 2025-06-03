@@ -3,7 +3,7 @@ This folder contains the scripts used to simulate teacher-student dialogues with
 
 | ⚠️ **IMPORTANT** |
 |------------------|
-| The scripts are only guaranteed to work with repository versions that include `"alignment-drift"` in the tag (e.g., `v1.0.0-alignment-drift`). Be sure to clone `Interact-LLM` using the correct tag.|
+| The scripts are only guaranteed to work with repository versions that include `"alignment-drift"` in the tag (e.g., `v1.0.3-alignment-drift`). Be sure to clone `Interact-LLM` using the correct tag.|
 
 For the dataset and analysis of the resulting simulations, see [INTERACT-LLM/alignment-drift-llms](https://github.com/INTERACT-LLM/alignment-drift-llms).
 
