@@ -3,7 +3,7 @@ This folder contains the scripts used to simulate teacher-student dialogues with
 
 | ⚠️ **IMPORTANT** |
 |------------------|
-| The scripts are only guaranteed to work with repository versions that include `"alignment-drift"` in the tag (e.g., `v1.0.0-alignment-drift`). Be sure to clone `Interact-LLM` using the correct tag.|
+| The scripts are only guaranteed to work with repository versions that include `"alignment-drift"` in the tag (e.g., `v1.0.3-alignment-drift`). Be sure to clone `Interact-LLM` using the correct tag.|
 
 For the dataset and analysis of the resulting simulations, see [INTERACT-LLM/alignment-drift-llms](https://github.com/INTERACT-LLM/alignment-drift-llms).
 
@@ -60,22 +60,7 @@ Where `--model_name` refers to models such as `gemma3:12b`. These names need to 
 Refer to the paper repository [INTERACT-LLM/alignment-drift-llms](https://github.com/INTERACT-LLM/alignment-drift-llms) for the dataset and analysis of the simulations.
 
 # 📝 Citation 
-If you use our work, please cite:
-
-```
-@article{almasi2025alignmentdriftcefrpromptedllms,
-  title={Alignment Drift in CEFR-prompted LLMs for Interactive Spanish Tutoring}, 
-  author={Mina Almasi and Ross Deans Kristensen-McLachlan},
-  journal={arXiv preprint arXiv:2505.08351},
-  year={2025},
-  url={https://arxiv.org/abs/2505.08351},
-  note={cs.CL}
-}
-```
-
-<div style="margin-top: 1.2em;"></div>
-
-> Note: This paper has been accepted to the ACL workshop [BEA2025](https://sig-edu.org/bea/2025) (*20th Workshop on Innovative Use of NLP for Building Educational Applications*). The final version, appearing in the ACL Anthology, is forthcoming.
+Refer to the paper repository for [how to cite us](https://github.com/INTERACT-LLM/alignment-drift-llms?tab=readme-ov-file#-citation) !
 
 # ✨️ Acknowledgements
 Simulations in [Almasi & Kristensen-McLachlan (2025)](https://arxiv.org/abs/2505.08351) were run entirely using Huggingface's [transformers](https://github.com/huggingface/transformers) library (specified as a `hf`).
